@@ -385,8 +385,7 @@
                     <div class="row">
                         <div class="section-title">
                             <h2 id="course">1 XRP = $2.612</h2>
-                            <p class="mt-1 wth-icon" id="procent">+1.99 <span class="graph-up wth-icon"> <img
-                                        src="./assets/img/icons/arrow-up.svg" alt=""> +320.54%</span></p>
+                             <p class="mt-1 wth-icon">+1.80 <span class="graph-up wth-icon"><img src="./arrow-up.svg"> +290.44%</span></p>
                         </div>
                     </div>
                     <div class="row">
@@ -487,34 +486,65 @@
 
     <script>
 
-        $(document).ready(function () {
-            var table = $('#sortTable').DataTable({
-                "pagingType": "none",
-                "paging": true,
-                "pageLength": 12,
-                "ordering": true,
-                "searching": false,
-                "lengthChange": false,
-                "info": false
+      $(document).ready(function () {
+    // Инициализация DataTable
+    var table = $('#sortTable').DataTable({
+        paging: false,
+        pageLength: 12,
+        ordering: true,
+        searching: false,
+        lengthChange: false,
+        info: false,
+        columnDefs: [
+            {
+                targets: 3,           // Номер колонки "Price"
+                type: 'num',         // Указываем числовой тип
+                orderable: true      // Включаем сортировку
+            }
+        ],
+        language: {
+            paginate: {
+                previous: "Предыдущая",
+                next: "Следующая"
+            }
+        }
+    });
+
+    // Обработка клика на заголовок колонки "Price"
+    $('#sortTable thead').on('click', 'th', function () {
+        var columnIndex = $(this).index(); // Получаем индекс колонки
+        if (columnIndex === 3) { // Убедимся, что это "Price"
+            var order = table.order(); // Текущий порядок сортировки
+            var currentOrder = order[0] && order[0][1]; // Получаем текущее направление (asc/desc)
+
+            // Получаем данные из текущей таблицы
+            var data = table
+                .column(columnIndex, { order: "current" }) // Текущая сортировка
+                .data()
+                .toArray();
+
+            // Сортируем массив чисел вручную
+            var sortedData = data.sort(function (a, b) {
+                return parseInt(a) - parseInt(b); // Сравнение чисел
             });
 
-            var sortDirections = {};
+            // Если текущий порядок "asc", переворачиваем массив для "desc"
+            if (currentOrder === "asc") {
+                sortedData.reverse();
+            }
 
-            $('#sortTable thead').on('click', 'th', function () {
-                var columnIndex = $(this).index();
-                var currentOrder = table.order();
-
-                // Определяем направление сортировки
-                var newDirection = sortDirections[columnIndex] === 'asc' ? 'desc' : 'asc';
-
-                // Сохраняем текущее направление для колонки
-                sortDirections[columnIndex] = newDirection;
-
-                // Применяем сортировку
-                table.order([columnIndex, newDirection]).draw();
+            // Обновляем таблицу с новыми значениями
+            table.column(columnIndex).data().each(function (cell, i) {
+                table.cell(i, columnIndex).data(sortedData[i]);
             });
-        });
 
+            // Перерисовываем таблицу
+            table.draw();
+        }
+    });
+});
+
+    
 
     </script>
 </body>
